@@ -470,7 +470,10 @@ def configure_cloudfront(domain, s3bucket):
             'DomainName': '{}.s3.amazonaws.com'.format(s3bucket),
             'Id': 'lambda-letsencrypt-challenges',
             'OriginPath': "/{}".format(domain['CLOUDFRONT_ID']),
-            'S3OriginConfig': {u'OriginAccessIdentity': ''}
+            'S3OriginConfig': {u'OriginAccessIdentity': ''},
+            'CustomHeaders': {
+                'Quantity': 0
+            }
         })
 
     # now check for the behavior rule
