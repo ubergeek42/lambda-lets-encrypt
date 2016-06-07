@@ -221,7 +221,8 @@ def wizard_cf(global_config):
                 'VALIDATION_METHODS': []
             }
             print("Choose validation methods for the domain '{}'".format(dns_name))
-            route53_id = route53.get_zone_id(dns_name)
+            # print(dns_name)
+            route53_id = route53.get_zone_id(dns_name.replace('www.', ''))
             if route53_id:
                 write_str(colors.OKGREEN + "Route53 zone detected!" + colors.ENDC)
                 validate_via_dns = get_yn("Validate using DNS", default=False)
@@ -517,7 +518,9 @@ def wizard(global_config):
     wizard_s3_cfg_bucket(global_config)
     wizard_challenges(global_config)
     wizard_cf(global_config)
-    wizard_elb(global_config)
+    global_config['elb_sites'] = []
+    global_config['elb_domains'] = []
+    # wizard_elb(global_config)
 
     cfg_menu = []
     cfg_menu.append({'selector': 1, 'prompt': 'SNS', 'return': wizard_sns})

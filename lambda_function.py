@@ -11,6 +11,9 @@ import urllib2
 import boto3
 import botocore
 
+# dns imports
+import dns.resolver
+
 # Configure logging
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger("Lambda-LetsEncrypt")
@@ -153,7 +156,28 @@ def route53_challenge_verifier(domain, token, keyauth):
     # TODO: this isn't implemented yet.
     # XXX: DNS propagation may make this somewhat time consuming.
     # try to resolve record '_acme-challenge.domain' and verify that the txt record value matches 'keyauth'
-    pass
+    logger.info('Attempting to verify Route53 challenge')
+    logger.info('domain: {} token: {} keyauth: {}'.format(domain, token, keyauth))
+    count = 0
+
+    record = '_acme-challenge.{}'.format(domain)
+    while count < 5:
+        try:
+            records = dns.resolver.query(record, 'TXT')
+            logger.info('records: {}'.format(records[0]))
+            return records[0].strings[0]
+            # if keyauth in records[0].strings:
+            #     return True
+            # else:
+            #     count = count + 1
+            #     sleep(5)
+        except:
+            logger.info('failed')
+            count = count + 1
+            sleep(5)
+
+    return False
+
 
 
 def authorize_domain(user, domain):
@@ -200,7 +224,7 @@ def iam_upload_cert(certname, cert, key, chain):
         # upload new cert
         try:
             newcert = iam.upload_server_certificate(
-                Path="/letsencrypt_lambda/",
+                Path="/cloudfront/",
                 ServerCertificateName=certname,
                 CertificateBody=cert,
                 PrivateKey=key,
@@ -437,8 +461,8 @@ def cloudfront_configure_cert(site, cert_id, cert_arn):
 
     # update it to point to the new cert
     cf_config['DistributionConfig']['ViewerCertificate']['IAMCertificateId'] = cert_id
-    cf_config['DistributionConfig']['ViewerCertificate']['Certificate'] = cert_id
-    cf_config['DistributionConfig']['ViewerCertificate']['CertificateSource'] = 'iam'
+    # cf_config['DistributionConfig']['ViewerCertificate']['Certificate'] = cert_id
+    # cf_config['DistributionConfig']['ViewerCertificate']['CertificateSource'] = 'iam'
     # make sure we use SNI only(otherwise the bill can be quite large, $600/month or so)
     cf_config['DistributionConfig']['ViewerCertificate']['MinimumProtocolVersion'] = 'TLSv1'
     cf_config['DistributionConfig']['ViewerCertificate']['SSLSupportMethod'] = 'sni-only'
@@ -548,15 +572,15 @@ def site_id(site):
 def lambda_handler(event, context):
     action_needed = False
     # Do a few sanity checks
-    if not check_bucket(cfg.S3CONFIGBUCKET):
-        logger.error("S3 configuration bucket does not exist")
-        # TODO: maybe send email?
-        return False
+    # if not check_bucket(cfg.S3CONFIGBUCKET):
+    #     logger.error("S3 configuration bucket does not exist")
+    #     # TODO: maybe send email?
+    #     return False
 
-    if not check_bucket(cfg.S3CHALLENGEBUCKET):
-        logger.error("S3 challenge bucket does not exist")
-        # TODO: maybe send email?
-        return False
+    # if not check_bucket(cfg.S3CHALLENGEBUCKET):
+    #     logger.error("S3 challenge bucket does not exist")
+    #     # TODO: maybe send email?
+    #     return False
 
     # check the certificates we want issued
     for site in cfg.SITES:
