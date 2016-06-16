@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 """Lambda Lets-Encrypt Configuration/Setup Tool
 
@@ -387,9 +388,9 @@ def wizard_save_config(global_config):
         print("Creating SNS Topic for Notifications ", end='')
         sns_arn = sns.get_or_create_topic(global_config['sns_email'])
         if sns_arn is False or sns_arn is None:
-            print(colors.FAIL + u'\u2717' + colors.ENDC)
+            print(colors.FAIL + '✗' + colors.ENDC)
         else:
-            print(colors.OKGREEN + u'\u2713' + colors.ENDC)
+            print(colors.OKGREEN + '✓' + colors.ENDC)
             templatevars['SNS_ARN'] = sns_arn
             templatevars['NOTIFY_EMAIL'] = global_config['sns_email']
 
@@ -397,13 +398,13 @@ def wizard_save_config(global_config):
     if global_config['create_s3_cfg_bucket']:
         print("Creating S3 Configuration Bucket ", end='')
         s3.create_bucket(global_config['s3_cfg_bucket'])
-        print(colors.OKGREEN + u'\u2713' + colors.ENDC)
+        print(colors.OKGREEN + '✓' + colors.ENDC)
 
     # create challenge bucket if necessary(needs to be configured as static website)
     if global_config['create_s3_challenge_bucket']:
         print("Creating S3 Challenge Bucket ", end='')
         s3.create_web_bucket(global_config['s3_challenge_bucket'])
-        print(colors.OKGREEN + u'\u2713' + colors.ENDC)
+        print(colors.OKGREEN + '✓' + colors.ENDC)
 
     # create IAM role if required
     if global_config['create_iam_role']:
@@ -430,7 +431,7 @@ def wizard_save_config(global_config):
     with open("config-wizard.py", 'w') as configfinal:
         print("Writing Configuration File ", end='')
         configfinal.write(config)
-        print(colors.OKGREEN + u'\u2713' + colors.ENDC)
+        print(colors.OKGREEN + '✓' + colors.ENDC)
 
     print("Creating Zip File To Upload To Lambda")
     archive_success = True
@@ -458,9 +459,9 @@ def wizard_save_config(global_config):
     print("    IAM ARN: {}".format(iam_arn))
     print("    Uploading Function ", end='')
     if awslambda.create_function("lambda-letsencrypt", iam_arn, 'lambda-letsencrypt-dist.zip'):
-        print(colors.OKGREEN + u'\u2713' + colors.ENDC)
+        print(colors.OKGREEN + '✓' + colors.ENDC)
     else:
-        print(colors.FAIL + u'\u2717' + colors.ENDC)
+        print(colors.FAIL + '✗' + colors.ENDC)
         return
 
     print_header("Schedule Lambda Function")
