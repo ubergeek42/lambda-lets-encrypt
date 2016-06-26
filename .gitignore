@@ -7,3 +7,6 @@ config.py
 
 # Don't include any generated zip files
 *.zip
+
+lambda-letsencrypt-dist/
+config-wizard.py
