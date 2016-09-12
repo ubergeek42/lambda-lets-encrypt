@@ -149,20 +149,20 @@ class AcmeUser:
 
     def refresh_registration(self):
         # refresh registration details(and agreement if necessary)
-        code, result, info = _send_signed_request(
-            self, self.url, {
-                "resource": "reg",
-                "agreement": self.agreement,
-            }
-        )
-
-        # if the agreement has changed, autoaccept it and refresh the registration again
-        links = info.getheader('Link')
-        if re.search(r';rel="terms-of-service"', links):
-            new_agreement = re.sub(r'.*<(.*)>;rel="terms-of-service".*', r'\1', links)
-        if self.agreement != new_agreement:
-            self.agreement = new_agreement
-            self.refresh_registration()
+        try:
+            code, result, info = _send_signed_request(
+                self, self.url, {
+                    "resource": "reg",
+                    "agreement": self.agreement,
+                }
+            )
+        except IOError as e:
+            match = re.search(r'does not match current agreement URL \[(.*)\]', str(e))
+            if (match):
+                self.agreement = match.group(1)
+                self.refresh_registration
+            else:
+                raise e
 
     def register(self, email):
         if not self.url:
