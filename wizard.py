@@ -466,15 +466,15 @@ def wizard_save_config(global_config):
     print_header("Schedule Lambda Function")
     write_str("I've done all I can for you now, there's one last step you have to take manually in order to schedule your lambda function to run once a day.")
     write_str("Log into your aws console and go to this page:")
-    lambda_event_url = "https://console.aws.amazon.com/lambda/home#/functions/lambda-letsencrypt?tab=eventSources"
+    lambda_event_url = "https://console.aws.amazon.com/lambda/home#/functions/lambda-letsencrypt?tab=triggers"
     print(colors.OKBLUE + lambda_event_url + colors.ENDC)
     print()
-    write_str('Click on "Add event source". From the dropdown, choose "Scheduled Event". Enter the following:')
-    write_str("Name:                 'daily - rate(1 day)'")
-    write_str("Description:          'Run every day'")
+    write_str('Click on "Add trigger". Click the empty box in the popup and from the dropdown, choose "CloudWatch Events - Schedule". Enter the following:')
+    write_str("Rule name:            'Daily'")
+    write_str("Rule description:     'Run every day'")
     write_str("Schedule Expression:  'rate(1 day)'")
     print()
-    write_str("Choose to 'Enable Now', then click 'Submit'")
+    write_str("Choose to 'Enable trigger', then click 'Submit'")
 
     print_header("Testing")
     write_str("You may want to test this before you set it to be recurring. Click on the 'Test' button in the AWS Console for the lambda-letsencrypt function. The data you provide to this function does not matter. Make sure to review the logs after it finishes and check for anything out of the ordinary.")
