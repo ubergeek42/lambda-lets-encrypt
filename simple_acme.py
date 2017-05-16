@@ -253,6 +253,9 @@ class AcmeAuthorization:
             for c in result['challenges']:
                 if 'error' in c:
                     logger.debug(c['error']['detail'])
+        elif status == 404 and result['detail'] == 'Expired authorization':
+            status = 'expired'
+
         return status
 
     def complete_challenges(self, challenge_type, func_challenge, func_verifier):
