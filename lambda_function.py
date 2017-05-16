@@ -50,6 +50,14 @@ def load_file(directory, filename):
             return False
         return False
 
+def delete_file(directory, filename):
+    try:
+        s3.Object(cfg.S3CONFIGBUCKET, directory + "/" + filename).delete()
+        return True
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            return False
+        return False
 
 # Verify the bucket exists
 def check_bucket(bucketname):
@@ -164,6 +172,14 @@ def authorize_domain(user, domain):
     else:
         authzr = AcmeAuthorization(user=user, domain=domain['DOMAIN'])
     status = authzr.authorize()
+
+    # If authorization is expired, delete authzr file and try again with a new one
+    if (status == 'expired'):
+        logger.info('Authorization for {} expired, deleting and recreating'.format(domain['DOMAIN']))
+        if delete_file(domain['DOMAIN'], authzrfilename):
+            return authorize_domain(user, domain)
+        else:
+            logger.warn('Error deleting file: {}'.format(authzrfilename))
 
     # save the (new/updated) authorization response
     save_file(domain['DOMAIN'], authzrfilename, authzr.serialize())
