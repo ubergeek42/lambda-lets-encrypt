@@ -470,6 +470,7 @@ def configure_cloudfront(domain, s3bucket):
             'DomainName': '{}.s3.amazonaws.com'.format(s3bucket),
             'Id': 'lambda-letsencrypt-challenges',
             'OriginPath': "/{}".format(domain['CLOUDFRONT_ID']),
+            'CustomHeaders': {u'Quantity': 0},
             'S3OriginConfig': {u'OriginAccessIdentity': ''}
         })
 
@@ -493,7 +494,10 @@ def configure_cloudfront(domain, s3bucket):
             'ForwardedValues': {
                 u'Cookies': {u'Forward': 'none'},
                 'Headers': {'Quantity': 0},
-                'QueryString': False
+                'QueryString': False,
+                'QueryStringCacheKeys': {
+                    'Quantity': 0
+                }
             },
             'MaxTTL': 31536000,
             'MinTTL': 0,
@@ -502,7 +506,11 @@ def configure_cloudfront(domain, s3bucket):
             'TargetOriginId': 'lambda-letsencrypt-challenges',
             'TrustedSigners': {u'Enabled': False, 'Quantity': 0},
             'ViewerProtocolPolicy': 'allow-all',
-            'Compress': False
+            'Compress': False,
+            'FieldLevelEncryptionId': '',
+            "LambdaFunctionAssociations": {
+                "Quantity": 0
+            }
         })
         quantity = cf_config['DistributionConfig']['CacheBehaviors'].get('Quantity', 0)
         cf_config['DistributionConfig']['CacheBehaviors']['Quantity'] = quantity + 1
