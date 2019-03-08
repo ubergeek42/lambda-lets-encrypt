@@ -103,6 +103,8 @@ def s3_challenge_solver(domain, token, keyauth, bucket=None, prefix=None):
         Body=keyauth,
         Expires=expires
     )
+    object_acl = s3.ObjectAcl(bucket,filename)
+    object_acl.put(ACL='public-read')
     return True
 
 
